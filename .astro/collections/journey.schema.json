@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string"
+    },
+    "org": {
+      "type": "string"
+    },
+    "period": {
+      "type": "string"
+    },
+    "start": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "logo": {
+      "type": "string"
+    },
+    "blurb": {
+      "type": "string"
+    },
+    "$schema": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "role",
+    "org",
+    "period",
+    "start"
+  ]
+}

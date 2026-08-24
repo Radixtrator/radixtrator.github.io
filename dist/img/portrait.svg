@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Portrait placeholder">
+  <defs>
+    <pattern id="h" width="10" height="10" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#24282f" stroke-width="1.5"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="400" fill="#121419"/>
+  <rect width="400" height="400" fill="url(#h)"/>
+  <circle cx="200" cy="165" r="58" fill="none" stroke="#ffb454" stroke-width="3"/>
+  <path d="M105 330c0-52 43-85 95-85s95 33 95 85" fill="none" stroke="#ffb454" stroke-width="3"/>
+  <text x="200" y="378" text-anchor="middle" font-family="ui-monospace,monospace"
+        font-size="15" letter-spacing="3" fill="#6c7480">PORTRAIT.JPG</text>
+</svg>
