@@ -1,0 +1,247 @@
+---
+import { site } from '../data/site';
+---
+
+<section class="splash" id="splash">
+  <canvas class="splash__canvas" id="cloud" aria-hidden="true"></canvas>
+
+  <div class="splash__inner shell">
+    <p class="splash__eyebrow">{site.splash.eyebrow}</p>
+    <h1 class="splash__name">{site.name}</h1>
+    <p class="splash__tag">{site.tagline}</p>
+  </div>
+
+  <a class="splash__cue" href="#about" aria-label="Scroll to content">
+    <span>Scroll</span>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 5v14M6 13l6 6 6-6"></path>
+    </svg>
+  </a>
+</section>
+
+<script>
+  /**
+   * Drifting point cloud.
+   *
+   * Points are sampled on a sphere, rotated with a hand-rolled 3×3, and
+   * projected. Near neighbours are joined by short lines whose opacity falls
+   * off with distance — the constellation effect. No library, no WebGL.
+   *
+   * Cost control: the neighbour search is O(n²), so `COUNT` stays small and
+   * the pair list is rebuilt only every few frames rather than every frame.
+   */
+  type P = { x: number; y: number; z: number; px: number; py: number; s: number };
+
+  const canvas = document.getElementById('cloud') as HTMLCanvasElement | null;
+  const ctx = canvas?.getContext('2d', { alpha: true });
+  if (canvas && ctx) {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const read = (n: string, fb: string) =>
+      getComputedStyle(document.documentElement).getPropertyValue(n).trim() || fb;
+    const ACCENT = read('--accent', '#ffb454');
+    const FG = read('--fg-faint', '#6c7480');
+
+    // Fewer points on small screens: the pair search dominates the frame.
+    const small = window.innerWidth < 700;
+    const COUNT = small ? 130 : 260;
+    // Shorter on small screens: the cloud is drawn at a smaller radius there,
+    // so a fixed threshold links nearly every pair and reads as a solid mesh.
+    const LINK_DIST = small ? 56 : 86; // px, in projected space
+    const REBUILD_EVERY = 3; // frames between neighbour-list rebuilds
+
+    let w = 0;
+    let h = 0;
+    let dpr = 1;
+    let radius = 0;
+
+    const pts: P[] = [];
+    let pairs: Array<[number, number, number]> = [];
+
+    /** Fibonacci sphere — even coverage, no clustering at the poles. */
+    const seed = () => {
+      pts.length = 0;
+      const golden = Math.PI * (3 - Math.sqrt(5));
+      for (let i = 0; i < COUNT; i++) {
+        const y = 1 - (i / (COUNT - 1)) * 2;
+        const r = Math.sqrt(Math.max(0, 1 - y * y));
+        const th = golden * i;
+        // Jitter the shell so it reads as a cloud, not a shell.
+        const j = 0.72 + Math.random() * 0.28;
+        pts.push({
+          x: Math.cos(th) * r * j,
+          y: y * j,
+          z: Math.sin(th) * r * j,
+          px: 0,
+          py: 0,
+          s: 0,
+        });
+      }
+    };
+
+    const resize = () => {
+      if (!canvas.parentElement) return;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = rect.width;
+      h = rect.height;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      radius = Math.min(w, h) * 0.36;
+    };
+
+    // Pointer parallax, eased toward the target so it never snaps.
+    let tiltX = 0;
+    let tiltY = 0;
+    let aimX = 0;
+    let aimY = 0;
+
+    window.addEventListener(
+      'pointermove',
+      (e) => {
+        aimX = (e.clientY / window.innerHeight - 0.5) * 0.5;
+        aimY = (e.clientX / window.innerWidth - 0.5) * 0.5;
+      },
+      { passive: true },
+    );
+
+    let frame = 0;
+    let spin = 0;
+    let raf = 0;
+
+    const draw = () => {
+      ctx.clearRect(0, 0, w, h);
+
+      tiltX += (aimX - tiltX) * 0.045;
+      tiltY += (aimY - tiltY) * 0.045;
+      if (!reduced) spin += 0.0016;
+
+      const ax = tiltX;
+      const ay = spin + tiltY;
+      const sinX = Math.sin(ax);
+      const cosX = Math.cos(ax);
+      const sinY = Math.sin(ay);
+      const cosY = Math.cos(ay);
+
+      const cx = w / 2;
+      const cy = h / 2;
+
+      // Rotate + project.
+      for (const p of pts) {
+        const x1 = p.x * cosY - p.z * sinY;
+        const z1 = p.x * sinY + p.z * cosY;
+        const y2 = p.y * cosX - z1 * sinX;
+        const z2 = p.y * sinX + z1 * cosX;
+
+        const persp = 2.6 / (2.6 + z2); // z2 ∈ [-1, 1]
+        p.px = cx + x1 * radius * persp;
+        p.py = cy + y2 * radius * persp;
+        p.s = persp; // doubles as a depth cue: nearer → larger, brighter
+      }
+
+      // Neighbour pairs, refreshed periodically rather than every frame.
+      if (frame % REBUILD_EVERY === 0) {
+        pairs = [];
+        for (let i = 0; i < pts.length; i++) {
+          const a = pts[i]!;
+          for (let j = i + 1; j < pts.length; j++) {
+            const b = pts[j]!;
+            const dx = a.px - b.px;
+            const dy = a.py - b.py;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < LINK_DIST * LINK_DIST) pairs.push([i, j, Math.sqrt(d2)]);
+          }
+        }
+      }
+
+      // Links first, so points sit on top of them.
+      ctx.lineWidth = 1;
+      for (const [i, j, d] of pairs) {
+        const a = pts[i]!;
+        const b = pts[j]!;
+        const near = (a.s + b.s) / 2;
+        const alpha = (1 - d / LINK_DIST) * 0.38 * near;
+        if (alpha <= 0.004) continue;
+        ctx.strokeStyle = withAlpha(FG, alpha);
+        ctx.beginPath();
+        ctx.moveTo(a.px, a.py);
+        ctx.lineTo(b.px, b.py);
+        ctx.stroke();
+      }
+
+      // Points. The nearest sliver picks up the accent colour.
+      for (const p of pts) {
+        const t = (p.s - 0.72) / 0.62; // roughly 0 (far) … 1 (near)
+        const r = 0.8 + t * 1.7;
+        ctx.fillStyle =
+          t > 0.7 ? withAlpha(ACCENT, 0.4 + t * 0.55) : withAlpha(FG, 0.32 + t * 0.6);
+        ctx.beginPath();
+        ctx.arc(p.px, p.py, Math.max(0.4, r), 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      frame++;
+      raf = requestAnimationFrame(draw);
+    };
+
+    /** Accepts #rgb, #rrggbb, or any rgb()/oklch() string the browser gave us. */
+    function withAlpha(color: string, a: number) {
+      const c = color.trim();
+      if (c.startsWith('#')) {
+        const hex = c.slice(1);
+        const full =
+          hex.length === 3
+            ? hex
+                .split('')
+                .map((ch) => ch + ch)
+                .join('')
+            : hex;
+        const n = parseInt(full, 16);
+        return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+      }
+      // Non-hex token: lean on color-mix and let the browser resolve it.
+      return `color-mix(in srgb, ${c} ${Math.round(a * 100)}%, transparent)`;
+    }
+
+    const start = () => {
+      if (!raf) raf = requestAnimationFrame(draw);
+    };
+    const stop = () => {
+      cancelAnimationFrame(raf);
+      raf = 0;
+    };
+
+    seed();
+    resize();
+
+    // Stop painting once the splash scrolls away, and while the tab is hidden.
+    const io = new IntersectionObserver(
+      ([e]) => (e?.isIntersecting ? start() : stop()),
+      { threshold: 0 },
+    );
+    io.observe(canvas.parentElement!);
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stop();
+      else if (raf === 0) start();
+    });
+
+    let rt: number;
+    window.addEventListener('resize', () => {
+      clearTimeout(rt);
+      rt = window.setTimeout(resize, 120);
+    });
+
+    // Reduced motion: paint one static frame and leave it be.
+    if (reduced) {
+      draw();
+      stop();
+      io.disconnect();
+    } else {
+      start();
+    }
+  }
+</script>

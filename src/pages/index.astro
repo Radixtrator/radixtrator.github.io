@@ -1,0 +1,21 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Splash from '../components/Splash.astro';
+import Hero from '../components/Hero.astro';
+import Publications from '../components/Publications.astro';
+import Journey from '../components/Journey.astro';
+import Contact from '../components/Contact.astro';
+import { site } from '../data/site';
+---
+
+<Base>
+  <Header />
+  {site.splash.enabled && <Splash />}
+  <main>
+    <Hero />
+    <Publications />
+    <Journey />
+    <Contact />
+  </main>
+</Base>

@@ -1,0 +1,117 @@
+---
+import { getCollection, render } from 'astro:content';
+import { site } from '../data/site';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const withBase = (p: string) => (p.startsWith('/') ? base + p : p);
+
+const all = await getCollection('publications');
+
+// Newest year first; within a year, `order` ascending, then title.
+all.sort(
+  (a, b) =>
+    b.data.year - a.data.year ||
+    a.data.order - b.data.order ||
+    a.data.title.localeCompare(b.data.title),
+);
+
+const years = [...new Set(all.map((p) => p.data.year))];
+
+// Render each markdown body once, up front.
+const bodies = new Map<string, any>();
+for (const p of all) {
+  const { Content } = await render(p);
+  bodies.set(p.id, Content);
+}
+
+/** First link in the list becomes the title's href. */
+const primary = (p: (typeof all)[number]) => p.data.links[0]?.href;
+
+/** Fallback tile label: the venue acronym if given, else title initials. */
+const initials = (t: string) =>
+  t
+    .split(/\s+/)
+    .filter((w) => /^[A-Za-z]/.test(w))
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join('');
+---
+
+<section class="shell" id="publications">
+  <div data-reveal>
+    <p class="eyebrow"><span class="idx">02</span> Publications</p>
+    <h2>Selected work</h2>
+  </div>
+
+  <div style="margin-top:2.25rem">
+    {
+      years.map((year) => {
+        const items = all.filter((p) => p.data.year === year);
+        return (
+          <div class="yearblock" data-reveal>
+            <div class="yearblock__year">{year}</div>
+            <div class="pubs">
+              {items.map((p) => {
+                const Body = bodies.get(p.id);
+                const href = primary(p);
+                return (
+                  <article class="pub">
+                    {p.data.thumb ? (
+                      <img
+                        class="pub__thumb"
+                        src={withBase(p.data.thumb)}
+                        alt=""
+                        width="264"
+                        height="165"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div class="pub__thumb pub__thumb--gen" aria-hidden="true">
+                        {p.data.short ?? initials(p.data.title)}
+                      </div>
+                    )}
+
+                    <div>
+                      <h3 class="pub__title">
+                        {href ? <a href={href}>{p.data.title}</a> : p.data.title}
+                        {p.data.badge && <span class="badge">{p.data.badge}</span>}
+                      </h3>
+
+                      <p class="pub__authors">
+                        {p.data.authors.map((a, i) => (
+                          <>
+                            {a === site.authorName ? <span class="me">{a}</span> : a}
+                            {i < p.data.authors.length - 1 ? ', ' : ''}
+                          </>
+                        ))}
+                      </p>
+
+                      <p class="pub__venue">
+                        {p.data.venue}
+                        {p.data.detail ? ` · ${p.data.detail}` : ''}
+                      </p>
+
+                      {Body && (
+                        <div class="pub__abstract">
+                          <Body />
+                        </div>
+                      )}
+
+                      {p.data.links.length > 0 && (
+                        <div class="pub__links">
+                          {p.data.links.map((l) => (
+                            <a href={l.href}>{l.label}</a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })
+    }
+  </div>
+</section>

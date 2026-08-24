@@ -1,0 +1,90 @@
+---
+import { site } from '../data/site';
+import Icon from './Icon.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const withBase = (p: string) => (p.startsWith('/') ? base + p : p);
+
+// The splash already carries the name as the page's single <h1>. Repeating it
+// here would give the document two h1s and say the same thing twice, so with a
+// splash the about block leads with its section label instead.
+const splashOn = site.splash.enabled;
+---
+
+<div class="shell hero" id="about" data-reveal>
+  <aside class="hero__aside">
+    {
+      site.portrait && (
+        <img
+          class="portrait"
+          src={withBase(site.portrait)}
+          alt={`Portrait of ${site.name}`}
+          width="336"
+          height="336"
+          loading="eager"
+        />
+      )
+    }
+    {
+      (site.location || site.status) && (
+        <div class="hero__meta">
+          {site.location && (
+            <span>
+              <span class="dot" aria-hidden="true" />
+              {site.location}
+            </span>
+          )}
+          {site.status && (
+            <span>
+              <span class="dot" aria-hidden="true" />
+              {site.status}
+            </span>
+          )}
+        </div>
+      )
+    }
+  </aside>
+
+  <div>
+    <p class="eyebrow"><span class="idx">01</span> About</p>
+
+    {
+      !splashOn && (
+        <>
+          <h1>{site.name}</h1>
+          <p class="hero__role">{site.tagline}</p>
+        </>
+      )
+    }
+
+    <div class="prose">
+      {site.intro.map((p) => <p set:html={p} />)}
+    </div>
+
+    {
+      site.interests.length > 0 && (
+        <ul class="chips" aria-label="Research interests">
+          {site.interests.map((i) => (
+            <li class="chip">{i}</li>
+          ))}
+        </ul>
+      )
+    }
+
+    <div class="socials">
+      {
+        site.socials.map((s) => (
+          <a
+            class="social"
+            href={s.href.startsWith('/') ? withBase(s.href) : s.href}
+            rel={s.href.startsWith('http') ? 'me noopener' : undefined}
+            target={s.href.startsWith('http') ? '_blank' : undefined}
+          >
+            <Icon name={s.icon} />
+            {s.label}
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</div>

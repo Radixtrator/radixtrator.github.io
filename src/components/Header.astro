@@ -1,0 +1,97 @@
+---
+import { site } from '../data/site';
+
+// Over the splash the bar is invisible and inert; it fades in once the
+// splash is scrolled past. Without a splash it is simply always visible.
+const overSplash = site.splash.enabled;
+---
+
+<header class={`hdr${overSplash ? ' hdr--veiled' : ''}`} id="siteHeader">
+  <div class="shell hdr__in">
+    <a class="brand" href="#top">
+      <span class="brand__name">{site.name}</span>
+      <span class="brand__tag">{site.tagline}</span>
+    </a>
+
+    <button
+      class="nav__toggle"
+      id="navToggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="siteNav"
+    >
+      Menu
+      <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden="true">
+        <path
+          d="M2 4.5 6 8.5l4-4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+    </button>
+
+    <nav class="nav" id="siteNav" aria-label="Sections">
+      {site.nav.map((n) => <a href={n.href}>{n.name}</a>)}
+    </nav>
+  </div>
+</header>
+
+<script>
+  const toggle = document.getElementById('navToggle');
+  const nav = document.getElementById('siteNav');
+  const mq = window.matchMedia('(max-width: 620px)');
+
+  /** The dropdown only exists on narrow screens; keep `hidden` in sync. */
+  const sync = () => {
+    if (!nav) return;
+    if (mq.matches) {
+      nav.hidden = toggle?.getAttribute('aria-expanded') !== 'true';
+    } else {
+      nav.hidden = false;
+      toggle?.setAttribute('aria-expanded', 'false');
+    }
+  };
+
+  toggle?.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!open));
+    sync();
+  });
+
+  nav?.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).tagName === 'A' && mq.matches) {
+      toggle?.setAttribute('aria-expanded', 'false');
+      sync();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && mq.matches) {
+      toggle?.setAttribute('aria-expanded', 'false');
+      sync();
+    }
+  });
+
+  mq.addEventListener('change', sync);
+  sync();
+
+  /**
+   * Reveal the bar once the splash has scrolled past. A sentinel + observer
+   * beats a scroll handler here: no work happens between the two crossings.
+   */
+  const header = document.getElementById('siteHeader');
+  const splash = document.getElementById('splash');
+
+  if (header?.classList.contains('hdr--veiled') && splash) {
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        // Fade in when less than a quarter of the splash is still on screen.
+        header.classList.toggle('is-shown', !entry?.isIntersecting);
+      },
+      { threshold: 0.25 },
+    );
+    io.observe(splash);
+  }
+</script>

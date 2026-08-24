@@ -1,0 +1,95 @@
+---
+import { getCollection } from 'astro:content';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const withBase = (p: string) => (p.startsWith('/') ? base + p : p);
+
+const stops = await getCollection('journey');
+stops.sort((a, b) => b.data.start - a.data.start);
+
+const initials = (org: string) =>
+  org
+    .split(/\s+/)
+    .filter((w) => /^[A-Z]/.test(w))
+    .slice(0, 3)
+    .map((w) => w[0])
+    .join('');
+---
+
+<section class="shell" id="journey">
+  <div class="carousel__head" data-reveal>
+    <div style="flex:1;min-width:0">
+      <p class="eyebrow"><span class="idx">03</span> Academic journey</p>
+      <h2>Where I have been</h2>
+    </div>
+
+    <div class="carousel__ctrls">
+      <button class="carousel__btn" data-dir="-1" type="button" aria-label="Previous">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 8 12l7 7"></path></svg>
+      </button>
+      <button class="carousel__btn" data-dir="1" type="button" aria-label="Next">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="track" id="journeyTrack" data-reveal data-reveal-delay="90" tabindex="0" role="group" aria-label="Positions, most recent first">
+    {
+      stops.map((s) => (
+        <article class="jcard">
+          {s.data.logo ? (
+            <img
+              class="jcard__logo"
+              src={withBase(s.data.logo)}
+              alt=""
+              width="80"
+              height="80"
+              loading="lazy"
+            />
+          ) : (
+            <div class="jcard__logo" aria-hidden="true">
+              {initials(s.data.org)}
+            </div>
+          )}
+          <p class="jcard__period">{s.data.period}</p>
+          <div>
+            <h3 class="jcard__role">{s.data.role}</h3>
+            <p class="jcard__org">{s.data.org}</p>
+          </div>
+          {s.data.blurb && <p class="jcard__blurb">{s.data.blurb}</p>}
+        </article>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  const track = document.getElementById('journeyTrack');
+  const btns = document.querySelectorAll<HTMLButtonElement>('.carousel__btn');
+
+  /** Disable arrows when the track fits or an end is reached. */
+  const refresh = () => {
+    if (!track) return;
+    const max = track.scrollWidth - track.clientWidth;
+    btns.forEach((b) => {
+      const dir = Number(b.dataset.dir);
+      b.disabled =
+        max <= 1 ||
+        (dir < 0 && track.scrollLeft <= 1) ||
+        (dir > 0 && track.scrollLeft >= max - 1);
+    });
+  };
+
+  btns.forEach((b) =>
+    b.addEventListener('click', () => {
+      if (!track) return;
+      const card = track.querySelector('.jcard');
+      const step = card ? card.getBoundingClientRect().width + 14 : 260;
+      track.scrollBy({ left: step * Number(b.dataset.dir), behavior: 'smooth' });
+    }),
+  );
+
+  track?.addEventListener('scroll', refresh, { passive: true });
+  window.addEventListener('resize', refresh);
+  refresh();
+</script>

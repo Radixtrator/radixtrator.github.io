@@ -1,0 +1,27 @@
+---
+import { site } from '../data/site';
+---
+
+<section class="shell" id="contact">
+  <p class="eyebrow" data-reveal><span class="idx">04</span> Contact</p>
+
+  <div class="contact" data-reveal data-reveal-delay="80">
+    <div>
+      <p class="contact__mail">
+        <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+      </p>
+      <p class="contact__signoff">{site.contact.signoff}</p>
+    </div>
+
+    <address class="contact__addr">
+      {site.contact.address.map((line) => <>{line}<br /></>)}
+    </address>
+  </div>
+</section>
+
+<footer class="ftr">
+  <div class="shell ftr__in">
+    <span>© {new Date().getFullYear()} {site.name}</span>
+    <span>Built with Astro · Hosted on GitHub Pages</span>
+  </div>
+</footer>

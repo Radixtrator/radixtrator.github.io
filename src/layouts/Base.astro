@@ -1,0 +1,101 @@
+---
+import '../styles/global.css';
+import { site } from '../data/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const { title = `${site.name} — ${site.tagline}`, description = site.description } =
+  Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://example.com');
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0a0b0d" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:type" content="profile" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+
+    <link rel="icon" href={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/favicon.svg`} type="image/svg+xml" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+
+    <script
+      is:inline
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        name: site.name,
+        jobTitle: site.tagline,
+        email: `mailto:${site.contact.email}`,
+        url: canonical.href,
+        sameAs: site.socials
+          .map((s) => s.href)
+          .filter((h) => h.startsWith('http')),
+      })}
+    />
+  </head>
+
+  <body id="top">
+    <a class="skip" href="#about">Skip to content</a>
+    <slot />
+
+    <script>
+      /**
+       * Scroll reveal. Elements marked `data-reveal` start lowered and
+       * transparent, and settle as they enter the viewport.
+       *
+       * Two guarantees matter more than the effect itself:
+       *   1. If JS never runs, nothing is hidden — the CSS only hides an
+       *      element once `.js-reveal` is on <html>, which this script sets.
+       *   2. Under prefers-reduced-motion the class is never added, so
+       *      everything paints immediately.
+       */
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const targets = document.querySelectorAll<HTMLElement>('[data-reveal]');
+
+      if (!reduced && targets.length && 'IntersectionObserver' in window) {
+        document.documentElement.classList.add('js-reveal');
+
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (!e.isIntersecting) continue;
+              const el = e.target as HTMLElement;
+              // Stagger children of a revealed group for a softer cascade.
+              const delay = Number(el.dataset.revealDelay ?? 0);
+              el.style.transitionDelay = `${delay}ms`;
+              el.classList.add('is-revealed');
+              io.unobserve(el);
+            }
+          },
+          // Fire a little before the element is fully on screen.
+          { rootMargin: '0px 0px -12% 0px', threshold: 0.08 },
+        );
+
+        targets.forEach((t) => io.observe(t));
+      }
+    </script>
+  </body>
+</html>
