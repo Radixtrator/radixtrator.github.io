@@ -30,7 +30,7 @@ import { site } from '../data/site';
    * Cost control: the neighbour search is O(n²), so `COUNT` stays small and
    * the pair list is rebuilt only every few frames rather than every frame.
    */
-  type P = { x: number; y: number; z: number; px: number; py: number; s: number };
+  type P = { x: number; y: number; z: number; px: number; py: number; s: number; h: number };
 
   const canvas = document.getElementById('cloud') as HTMLCanvasElement | null;
   const ctx = canvas?.getContext('2d', { alpha: true });
@@ -39,7 +39,6 @@ import { site } from '../data/site';
 
     const read = (n: string, fb: string) =>
       getComputedStyle(document.documentElement).getPropertyValue(n).trim() || fb;
-    const ACCENT = read('--accent', '#ffb454');
     const FG = read('--fg-faint', '#6c7480');
 
     // Fewer points on small screens: the pair search dominates the frame.
@@ -75,6 +74,10 @@ import { site } from '../data/site';
           px: 0,
           py: 0,
           s: 0,
+          // Hue by index, which on a Fibonacci sphere means by latitude: the
+          // spectrum sweeps pole to pole and stays put as the cloud turns,
+          // rather than flickering per frame.
+          h: (i / COUNT) * 360,
         });
       }
     };
@@ -172,12 +175,14 @@ import { site } from '../data/site';
         ctx.stroke();
       }
 
-      // Points. The nearest sliver picks up the accent colour.
+      // Points. Each keeps its own hue; depth drives how vivid it reads, so
+      // the far side of the cloud recedes instead of competing for attention.
       for (const p of pts) {
         const t = (p.s - 0.72) / 0.62; // roughly 0 (far) … 1 (near)
         const r = 0.8 + t * 1.7;
-        ctx.fillStyle =
-          t > 0.7 ? withAlpha(ACCENT, 0.4 + t * 0.55) : withAlpha(FG, 0.32 + t * 0.6);
+        const sat = 52 + t * 40;
+        const light = 50 + t * 20;
+        ctx.fillStyle = `hsla(${p.h}, ${sat}%, ${light}%, ${0.34 + t * 0.58})`;
         ctx.beginPath();
         ctx.arc(p.px, p.py, Math.max(0.4, r), 0, Math.PI * 2);
         ctx.fill();

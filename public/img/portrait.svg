@@ -6,8 +6,8 @@
   </defs>
   <rect width="400" height="400" fill="#121419"/>
   <rect width="400" height="400" fill="url(#h)"/>
-  <circle cx="200" cy="165" r="58" fill="none" stroke="#ffb454" stroke-width="3"/>
-  <path d="M105 330c0-52 43-85 95-85s95 33 95 85" fill="none" stroke="#ffb454" stroke-width="3"/>
+  <circle cx="200" cy="165" r="58" fill="none" stroke="#4da3ff" stroke-width="3"/>
+  <path d="M105 330c0-52 43-85 95-85s95 33 95 85" fill="none" stroke="#4da3ff" stroke-width="3"/>
   <text x="200" y="378" text-anchor="middle" font-family="ui-monospace,monospace"
         font-size="15" letter-spacing="3" fill="#6c7480">PORTRAIT.JPG</text>
 </svg>
