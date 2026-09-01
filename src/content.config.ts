@@ -51,7 +51,7 @@ const journey = defineCollection({
     org: z.string(),
     /** Human-readable, e.g. "2023 — present". */
     period: z.string(),
-    /** Used for sorting only. Newest first. */
+    /** Used for sorting only, newest first. `YYYYMM`, so overlapping years order correctly. */
     start: z.number().int(),
     /** Optional logo in /public/img/. Falls back to the org's initials. */
     logo: z.string().optional(),

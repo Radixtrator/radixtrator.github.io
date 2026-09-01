@@ -19,10 +19,10 @@ export const site = {
   /** Shown in the header and the browser tab. */
   name: 'Lucas Plabst',
   /** One line under your name. Keep it short. */
-  tagline: 'PhD Candidate · Systems & Machine Learning',
+  tagline: 'UX Researcher · Augmented Reality & HCI',
   /** Meta description for search engines and link previews. */
   description:
-    'Research page of Your Name — publications, projects, and academic background in distributed systems and machine learning.',
+    'Research page of Lucas Plabst — publications, projects, and background in human–computer interaction, augmented reality notifications, and safety-critical XR.',
 
   /**
    * Your name exactly as it appears in author lists. Any author
@@ -37,30 +37,31 @@ export const site = {
   splash: {
     enabled: true,
     /** Small mono line above your name. */
-    eyebrow: 'Example University · Distributed Systems Group',
+    eyebrow: 'MeasuringU · Denver, Colorado',
   },
 
   /** Square image in /public/img/. Set to null to hide the portrait. */
   portrait: '/img/portrait.svg' as string | null,
 
   /** Small mono line under the portrait. Set either to null to hide. */
-  location: 'Boulder, Colorado' as string | null,
+  location: 'Longmont, Colorado' as string | null,
   status: 'Open to collaborations' as string | null,
 
   /** Hero paragraphs. Each string is its own <p>. */
   intro: [
-    'I am a PhD candidate at <strong>Example University</strong>, working in the <a href="https://example.edu">Distributed Systems Group</a> on the boundary between large-scale systems and machine learning. Before that I was a research engineer at <strong>Example Lab</strong>, and I completed my MSc at <strong>Example Institute of Technology</strong>.',
-    'My work asks how learned components behave once they leave the benchmark and enter a real system — where inputs drift, budgets are finite, and failure is not a number on a leaderboard. Lately that has meant scheduling under uncertainty, and making inference cheap enough to be boring.',
-    'Away from the desk I climb badly, run slowly, and maintain an unreasonable number of half-finished side projects. If any of this overlaps with what you are working on, send me a note.',
+    'I am a UX researcher at <strong>MeasuringU</strong> in Denver, where I plan and moderate research sessions for Fortune 500 clients and turn what participants actually do into something their product teams can act on. Before that I completed a binational cotutelle doctorate in computer science at the <a href="https://www.uni-wuerzburg.de">University of Würzburg</a> and <a href="https://www.colostate.edu">Colorado State University</a>.',
+    'My research is about notifications in augmented reality: when a headset should interrupt you, how the message ought to be presented, and what the interruption costs the task you were in the middle of. That question has taken me through patient monitoring for anaesthesiologists, AR-guided CPR with Cornell Tech, and cognitive load in VR assembly training for the Office of Naval Research.',
+    'Underneath all of it is ten-plus years of building AR and VR software and eight years of qualitative, quantitative, and mixed-methods research — usually in that order, because I would rather prototype the study than argue about it. If any of this overlaps with what you are working on, send me a note.',
   ],
 
   /** Short mono chips under the intro. */
   interests: [
-    'Distributed systems',
-    'Efficient inference',
-    'Scheduling',
-    'Systems for ML',
-    'Reproducibility',
+    'Augmented reality',
+    'Notifications & interruptions',
+    'User research',
+    'Cognitive load',
+    'Safety-critical HCI',
+    'VR training',
   ],
 
   /** In-page navigation. `href` must match a section id in index.astro. */
@@ -73,30 +74,27 @@ export const site = {
 
   /** Icon row under the intro. Delete any line you do not need. */
   socials: [
-    { label: 'Email', icon: 'mail' as SocialIcon, href: 'mailto:you@example.edu' },
+    { label: 'Email', icon: 'mail' as SocialIcon, href: 'mailto:hello@lucasplabst.com' },
     {
       label: 'Scholar',
       icon: 'scholar' as SocialIcon,
-      href: 'https://scholar.google.com/citations?user=CHANGEME',
+      href: 'https://scholar.google.com/citations?user=BZbwH-kAAAAJ&hl=en',
     },
-    { label: 'GitHub', icon: 'github' as SocialIcon, href: 'https://github.com/yourusername' },
+    { label: 'GitHub', icon: 'github' as SocialIcon, href: 'https://github.com/Radixtrator' },
     {
       label: 'LinkedIn',
       icon: 'linkedin' as SocialIcon,
-      href: 'https://www.linkedin.com/in/yourusername',
+      href: 'https://www.linkedin.com/in/lucasplabst',
     },
-    { label: 'ORCID', icon: 'orcid' as SocialIcon, href: 'https://orcid.org/0000-0000-0000-0000' },
-    { label: 'CV', icon: 'cv' as SocialIcon, href: '/cv.pdf' },
+    { label: 'ORCID', icon: 'orcid' as SocialIcon, href: 'https://orcid.org/0000-0002-9656-1827' },
+    // Drop the PDF at public/cv.pdf and uncomment.
+    // { label: 'CV', icon: 'cv' as SocialIcon, href: '/cv.pdf' },
   ],
 
   /** Footer block. */
   contact: {
-    email: 'you@example.edu',
-    address: [
-      'Department of Computer Science',
-      'Example University',
-      '1234 Example Street, Boulder, CO 80301',
-    ],
+    email: 'hello@lucasplabst.com',
+    address: ['Longmont, Colorado', 'United States'],
     signoff: 'Mail is answered slowly, but always answered.',
   },
 } as const;
