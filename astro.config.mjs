@@ -6,9 +6,13 @@ import { defineConfig } from 'astro/config';
 //   User site    — repo "<username>.github.io" → no `base`
 //   Project site — any other repo name         → base: '/<repo-name>'
 export default defineConfig({
-  site: 'https://Radixtrator.github.io',
+  site: 'https://lucasplabst.com',
   // base: '/your-repo-name',   // project sites only
   output: 'static',
+  // Old URLs still indexed by search engines from the previous site.
+  redirects: {
+    '/info': '/',
+  },
   trailingSlash: 'ignore',
   build: {
     // Emit /about/index.html style URLs — friendlier on GitHub Pages.
