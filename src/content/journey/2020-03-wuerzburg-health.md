@@ -3,5 +3,6 @@ role: "Research Associate, Intensive Health Care"
 org: "HCI Group, University of Würzburg"
 period: "Mar 2020 — Jul 2023"
 start: 202003
+logo: "/img/logos/wuerzburg.svg"
 blurb: "Built and studied AR headset applications for intensive care, co-designing with anaesthesiologists and running a 30-participant simulation study."
 ---

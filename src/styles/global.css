@@ -865,6 +865,14 @@ h2 {
   color: var(--accent);
   letter-spacing: 0.04em;
 }
+/* Brand logos are drawn for light backgrounds. */
+img.jcard__logo {
+  background: #fff;
+  padding: 4px;
+  width: auto;
+  max-width: 110px;
+  align-self: flex-start;
+}
 .jcard__period {
   font-family: var(--font-mono);
   font-size: 0.68rem;
